@@ -15,12 +15,12 @@ func NewTaskService(repo repository.TaskRepository) *TaskService {
 	return &TaskService{repo: repo}
 }
 
-func (u *TaskService) CreateTask(ctx context.Context, userID uuid.UUID, title string, description string) (*modelsService.Tasks, error) {
-	return &modelsService.Tasks{UserID: userID, Title: title, Description: description}, nil
+func (u *TaskService) CreateTask(ctx context.Context, userID uuid.UUID, title string, description string) error {
+	return u.repo.CreateTask(ctx, userID, title, description)
 }
-func (u *TaskService) MarkTaskCompleted(ctx context.Context, taskID int32) (*modelsService.Tasks, error) {
-	return &modelsService.Tasks{TaskID: taskID, Completed: true}, nil
+func (u *TaskService) MarkTaskCompleted(ctx context.Context, taskID int32) error {
+	return u.repo.MarkTaskCompleted(ctx, taskID)
 }
 func (u *TaskService) GetTasksByUser(ctx context.Context, userID uuid.UUID) ([]*modelsService.Tasks, error) {
-	return []*modelsService.Tasks{}, nil
+	return u.repo.GetTasksByUser(ctx, userID)
 }

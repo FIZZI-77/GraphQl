@@ -4,20 +4,21 @@ import (
 	"GraphQL/graph"
 	"GraphQL/logger"
 	"GraphQL/metrics"
+	handlerM "GraphQL/src/core/handler"
+	"GraphQL/src/core/middleware"
 	"GraphQL/src/core/repository"
 	"GraphQL/src/core/service"
 	pgxhelper "GraphQL/src/pkg"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"log"
-	"net/http"
-	"os"
-
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vektah/gqlparser/v2/ast"
+	"log"
+	"net/http"
+	"os"
 )
 
 const defaultPort = "8080"
@@ -67,8 +68,11 @@ func main() {
 		Cache: lru.New[string](100),
 	})
 
+	srv.AroundFields(middlewareMs.GraphQLFieldMetrics)
+	srv.AroundResponses(middlewareMs.GraphQLResponseMetrics)
+
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	http.Handle("/query", handlerM.HTTPMetrics(srv))
 	http.Handle("/metrics", promhttp.Handler())
 
 	logger.RecordMetric("http_requests_total", 1, map[string]string{

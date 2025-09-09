@@ -16,11 +16,12 @@ func NewUserService(repo repository.UserRepository) *UserService {
 }
 
 func (u *UserService) GetUserByID(ctx context.Context, userID uuid.UUID) (*modelsService.Users, error) {
-	return &modelsService.Users{UserID: userID}, nil
+	return u.repo.GetUserByID(ctx, userID)
 }
 func (u *UserService) GetAllUsers(ctx context.Context) ([]*modelsService.Users, error) {
-	return []*modelsService.Users{}, nil
+	return u.repo.GetAllUsers(ctx)
 }
-func (u *UserService) CreateUser(ctx context.Context, name string, email string) (*modelsService.Users, error) {
-	return &modelsService.Users{Name: name, Email: email}, nil
+func (u *UserService) CreateUser(ctx context.Context, name string, email string) error {
+	id := uuid.New()
+	return u.repo.CreateUser(ctx, id, name, email)
 }

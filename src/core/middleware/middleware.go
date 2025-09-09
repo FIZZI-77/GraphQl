@@ -1,4 +1,4 @@
-package middleware
+package middlewareMs
 
 import (
 	"GraphQL/metrics"
@@ -7,17 +7,38 @@ import (
 	"time"
 )
 
-func GraphQLMetricsMiddleware() func(ctx context.Context, next graphql.Resolver) (res interface{}, err error) {
-	return func(ctx context.Context, next graphql.Resolver) (res interface{}, err error) {
-		opCtx := graphql.GetOperationContext(ctx)
-		opName := opCtx.OperationName
-		start := time.Now()
+func GraphQLFieldMetrics(ctx context.Context, next graphql.Resolver) (res interface{}, err error) {
+	start := time.Now()
 
-		res, err = next(ctx)
+	res, err = next(ctx)
 
-		metrics.GraphQLRequestsTotal.WithLabelValues(opName).Inc()
-		metrics.GraphQLRequestDuration.WithLabelValues(opName).Observe(time.Since(start).Seconds())
-
-		return res, err
+	fieldCtx := graphql.GetFieldContext(ctx)
+	fieldName := fieldCtx.Field.Name
+	if fieldName == "" {
+		fieldName = "unknown_field"
 	}
+
+	metrics.GraphQLRequestsTotal.WithLabelValues(fieldName).Inc()
+	metrics.GraphQLRequestDuration.WithLabelValues(fieldName).
+		Observe(time.Since(start).Seconds())
+
+	return res, err
+}
+
+func GraphQLResponseMetrics(ctx context.Context, next graphql.ResponseHandler) *graphql.Response {
+	start := time.Now()
+
+	resp := next(ctx)
+
+	opCtx := graphql.GetOperationContext(ctx)
+	opName := opCtx.OperationName
+	if opName == "" {
+		opName = "unknown_operation"
+	}
+
+	metrics.GraphQLRequestsTotal.WithLabelValues(opName).Inc()
+	metrics.GraphQLRequestDuration.WithLabelValues(opName).
+		Observe(time.Since(start).Seconds())
+
+	return resp
 }

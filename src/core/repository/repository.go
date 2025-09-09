@@ -10,12 +10,12 @@ import (
 type UserRepository interface {
 	GetUserByID(ctx context.Context, userID uuid.UUID) (*modelsService.Users, error)
 	GetAllUsers(ctx context.Context) ([]*modelsService.Users, error)
-	CreateUser(ctx context.Context, name string, email string) (*modelsService.Users, error)
+	CreateUser(ctx context.Context, userID uuid.UUID, name string, email string) (*modelsService.Users, error)
 }
 
 type TaskRepository interface {
 	CreateTask(ctx context.Context, userID uuid.UUID, title string, description string) (*modelsService.Tasks, error)
-	MarkTaskCompleted(ctx context.Context, taskID string) (*modelsService.Tasks, error)
+	MarkTaskCompleted(ctx context.Context, taskID int32) error
 	GetTasksByUser(ctx context.Context, userID uuid.UUID) ([]*modelsService.Tasks, error)
 }
 
