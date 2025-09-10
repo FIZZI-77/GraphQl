@@ -14,7 +14,7 @@ type Users struct {
 }
 
 type Tasks struct {
-	TaskID      int32
+	TaskID      int
 	UserID      uuid.UUID
 	Title       string
 	Description string

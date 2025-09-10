@@ -6,39 +6,112 @@ package graph
 
 import (
 	"GraphQL/graph/model"
+	"GraphQL/logger"
+	"GraphQL/src/adapters/mapper"
 	"context"
 	"fmt"
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+	"strconv"
 )
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, name string, email string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: CreateUser - createUser"))
+	user, err := r.Service.User.CreateUser(ctx, name, email)
+	if err != nil {
+		logger.Error("CreateUser", zap.Error(err))
+		return nil, err
+	}
+
+	return mapper.UserToGraphQLUser(user), nil
+
 }
 
 // CreateTask is the resolver for the createTask field.
 func (r *mutationResolver) CreateTask(ctx context.Context, userID string, title string, description string) (*model.Task, error) {
+	u, err := uuid.Parse(userID)
+	if err != nil {
+		logger.Error("error parsing user id", zap.String("user_id", userID), zap.Error(err))
+		return nil, fmt.Errorf("invalid user id: %s", userID)
+	}
+	task, err := r.Service.CreateTask(ctx, u, title, description)
 
-	panic(fmt.Errorf("not implemented: CreateTask - createTask"))
+	if err != nil {
+		logger.Error("Failed to create task", zap.Error(err))
+		return nil, fmt.Errorf("error creating task: %w", err)
+	}
+	return mapper.TaskToGraphQlTask(task), nil
 }
 
 // MarkTaskCompleted is the resolver for the markTaskCompleted field.
 func (r *mutationResolver) MarkTaskCompleted(ctx context.Context, taskID string) (*model.Task, error) {
-	panic(fmt.Errorf("not implemented: MarkTaskCompleted - markTaskCompleted"))
+	id, err := strconv.Atoi(taskID)
+	if err != nil {
+		logger.Error("error parsing task id", zap.String("task_id", taskID), zap.Error(err))
+		return nil, fmt.Errorf("failed to parse task id: %w", err)
+	}
+	task, err := r.Service.MarkTaskCompleted(ctx, id)
+	if err != nil {
+		logger.Error("failed to mark task as completed", zap.String("task_id", taskID), zap.Error(err))
+		return nil, fmt.Errorf("failed to mark task completed: %w", err)
+	}
+	return mapper.TaskToGraphQlTask(task), nil
 }
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented: Users - users"))
+	var users []*model.User
+
+	usersDomain, err := r.Service.GetAllUsers(ctx)
+	if err != nil {
+		logger.Error("failed to get all users", zap.Error(err))
+		return nil, fmt.Errorf("failed to get all users: %w", err)
+	}
+	for _, user := range usersDomain {
+		users = append(users, mapper.UserToGraphQLUser(user))
+	}
+	return users, nil
 }
 
 // User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: User - user"))
+	uuidId, err := uuid.Parse(id)
+
+	if err != nil {
+		logger.Error("failed to parse user id", zap.String("user_id", id))
+		return nil, fmt.Errorf("invalid user id: %s", id)
+	}
+
+	user, err := r.Service.GetUserByID(ctx, uuidId)
+
+	if err != nil {
+		logger.Error("failed to get user by id", zap.String("user_id", id), zap.Error(err))
+		return nil, fmt.Errorf("error getting user: %w", err)
+	}
+
+	return mapper.UserToGraphQLUser(user), nil
 }
 
 // TasksByUser is the resolver for the tasksByUser field.
 func (r *queryResolver) TasksByUser(ctx context.Context, userID string) ([]*model.Task, error) {
-	panic(fmt.Errorf("not implemented: TasksByUser - tasksByUser"))
+	var tasks []*model.Task
+
+	id, err := uuid.Parse(userID)
+	if err != nil {
+		logger.Error("invalid user id", zap.String("user_id", userID), zap.Error(err))
+		return nil, fmt.Errorf("invalid user id: %s", userID)
+	}
+
+	tasksDomain, err := r.Service.GetTasksByUser(ctx, id)
+
+	if err != nil {
+		logger.Error("error getting tasks by user", zap.String("user_id", userID), zap.Error(err))
+		return nil, fmt.Errorf("error getting tasks: %w", err)
+	}
+	for _, task := range tasksDomain {
+		tasks = append(tasks, mapper.TaskToGraphQlTask(task))
+	}
+	return tasks, nil
 }
 
 // Mutation returns MutationResolver implementation.

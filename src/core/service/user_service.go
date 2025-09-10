@@ -21,7 +21,7 @@ func (u *UserService) GetUserByID(ctx context.Context, userID uuid.UUID) (*model
 func (u *UserService) GetAllUsers(ctx context.Context) ([]*modelsService.Users, error) {
 	return u.repo.GetAllUsers(ctx)
 }
-func (u *UserService) CreateUser(ctx context.Context, name string, email string) error {
+func (u *UserService) CreateUser(ctx context.Context, name string, email string) (*modelsService.Users, error) {
 	id := uuid.New()
 	return u.repo.CreateUser(ctx, id, name, email)
 }

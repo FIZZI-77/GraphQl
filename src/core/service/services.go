@@ -15,7 +15,7 @@ type User interface {
 
 type Task interface {
 	CreateTask(ctx context.Context, userID uuid.UUID, title string, description string) (*modelsService.Tasks, error)
-	MarkTaskCompleted(ctx context.Context, taskID int32) (*modelsService.Tasks, error)
+	MarkTaskCompleted(ctx context.Context, taskID int) (*modelsService.Tasks, error)
 	GetTasksByUser(ctx context.Context, userID uuid.UUID) ([]*modelsService.Tasks, error)
 }
 

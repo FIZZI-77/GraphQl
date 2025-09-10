@@ -29,3 +29,15 @@ func RecordMetric(name string, value float64, labels map[string]string) {
 		zap.Any("labels", labels),
 	)
 }
+
+func Error(msg string, fields ...zap.Field) {
+	log.Error(msg, fields...)
+}
+
+func Info(msg string, fields ...zap.Field) {
+	log.Info(msg, fields...)
+}
+
+func Warn(msg string, fields ...zap.Field) {
+	log.Warn(msg, fields...)
+}

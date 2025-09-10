@@ -3,6 +3,7 @@ package pgxhelper
 import (
 	"database/sql"
 	"fmt"
+	_ "github.com/lib/pq"
 )
 
 type Config struct {

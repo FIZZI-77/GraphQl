@@ -17,7 +17,7 @@ var (
 		prometheus.HistogramOpts{
 			Name:    "graphql_request_duration_seconds",
 			Help:    "Duration of GraphQL requests",
-			Buckets: prometheus.DefBuckets,
+			Buckets: prometheus.ExponentialBuckets(0.001, 2, 15),
 		},
 		[]string{"path", "method"},
 	)
@@ -37,11 +37,32 @@ var (
 		},
 		[]string{"path", "method"},
 	)
+
+	DBQueriesTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "db_queries_total",
+			Help: "Total number of database queries",
+		},
+		[]string{"query", "status"}, // status: success, error
+	)
+
+	DBQueryDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "db_query_duration_seconds",
+			Help:    "Duration of database queries",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"query"},
+	)
 )
 
 func RegisterMetrics() {
+
 	prometheus.MustRegister(HTTPRequestsTotal)
 	prometheus.MustRegister(HTTPRequestDuration)
 	prometheus.MustRegister(GraphQLRequestsTotal)
 	prometheus.MustRegister(GraphQLRequestDuration)
+	prometheus.MustRegister(DBQueriesTotal)
+	prometheus.MustRegister(DBQueryDuration)
+
 }

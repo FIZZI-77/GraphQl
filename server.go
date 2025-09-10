@@ -14,6 +14,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/joho/godotenv"
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vektah/gqlparser/v2/ast"
 	"log"
@@ -24,6 +26,11 @@ import (
 const defaultPort = "8080"
 
 func main() {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	db, err := pgxhelper.NewPostgresDB(pgxhelper.Config{
 		Host:     os.Getenv("HOST"),
@@ -48,7 +55,7 @@ func main() {
 
 	metrics.RegisterMetrics()
 
-	port := os.Getenv("PORT")
+	port := os.Getenv("SERVER_PORT")
 	if port == "" {
 		port = defaultPort
 	}

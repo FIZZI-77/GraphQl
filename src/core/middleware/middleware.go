@@ -18,8 +18,8 @@ func GraphQLFieldMetrics(ctx context.Context, next graphql.Resolver) (res interf
 		fieldName = "unknown_field"
 	}
 
-	metrics.GraphQLRequestsTotal.WithLabelValues(fieldName).Inc()
-	metrics.GraphQLRequestDuration.WithLabelValues(fieldName).
+	metrics.GraphQLRequestsTotal.WithLabelValues(fieldName, "POST").Inc()
+	metrics.GraphQLRequestDuration.WithLabelValues(fieldName, "POST").
 		Observe(time.Since(start).Seconds())
 
 	return res, err
@@ -36,8 +36,8 @@ func GraphQLResponseMetrics(ctx context.Context, next graphql.ResponseHandler) *
 		opName = "unknown_operation"
 	}
 
-	metrics.GraphQLRequestsTotal.WithLabelValues(opName).Inc()
-	metrics.GraphQLRequestDuration.WithLabelValues(opName).
+	metrics.GraphQLRequestsTotal.WithLabelValues(opName, "POST").Inc()
+	metrics.GraphQLRequestDuration.WithLabelValues(opName, "POST").
 		Observe(time.Since(start).Seconds())
 
 	return resp
