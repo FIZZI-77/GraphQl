@@ -2,14 +2,34 @@ package logger
 
 import (
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"time"
 )
 
 var log *zap.Logger
 
 func Init() error {
+	cfg := zap.Config{
+		Level:       zap.NewAtomicLevelAt(zap.InfoLevel),
+		Development: false,
+		Encoding:    "json", // важно для ELK
+		EncoderConfig: zapcore.EncoderConfig{
+			TimeKey:       "timestamp",
+			LevelKey:      "level",
+			NameKey:       "logger",
+			CallerKey:     "caller",
+			MessageKey:    "message",
+			StacktraceKey: "stacktrace",
+			EncodeLevel:   zapcore.LowercaseLevelEncoder,
+			EncodeTime:    zapcore.ISO8601TimeEncoder,
+			EncodeCaller:  zapcore.ShortCallerEncoder,
+		},
+		OutputPaths:      []string{"stdout"}, // логи идут в stdout
+		ErrorOutputPaths: []string{"stderr"},
+	}
+
 	var err error
-	log, err = zap.NewProduction()
+	log, err = cfg.Build()
 	if err != nil {
 		return err
 	}

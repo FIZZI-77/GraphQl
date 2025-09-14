@@ -53,6 +53,7 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
     depends_on:
       - graphql
 
@@ -63,6 +64,8 @@ services:
       - "3000:3000"
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
     depends_on:
       - prometheus
 
@@ -77,6 +80,11 @@ services:
       - "9200:9200"
     volumes:
       - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"'"]
+      interval: 10s
+      retries: 5
+
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.10.2
@@ -90,15 +98,23 @@ services:
 
   logstash:
     image: docker.elastic.co/logstash/logstash:8.10.2
+    container_name: logstash
+    user: "0:0"
     volumes:
       - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
     ports:
       - "5044:5044"
-    depends_on:
-      - elasticsearch
+    restart: always
+
+
 
 
 volumes:
   postgres_data:
   es_data:
+  grafana_data:
+  prometheus_data:

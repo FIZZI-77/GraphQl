@@ -22,6 +22,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, name string, email st
 		logger.Error("CreateUser", zap.Error(err))
 		return nil, err
 	}
+	logger.Info("")
 
 	return mapper.UserToGraphQLUser(user), nil
 
@@ -40,6 +41,7 @@ func (r *mutationResolver) CreateTask(ctx context.Context, userID string, title 
 		logger.Error("Failed to create task", zap.Error(err))
 		return nil, fmt.Errorf("error creating task: %w", err)
 	}
+	logger.Info("created", zap.String("user_id", userID), zap.String("title", title), zap.String("description", description))
 	return mapper.TaskToGraphQlTask(task), nil
 }
 
@@ -55,6 +57,7 @@ func (r *mutationResolver) MarkTaskCompleted(ctx context.Context, taskID string)
 		logger.Error("failed to mark task as completed", zap.String("task_id", taskID), zap.Error(err))
 		return nil, fmt.Errorf("failed to mark task completed: %w", err)
 	}
+	logger.Info("marked task as completed", zap.String("task_id", taskID))
 	return mapper.TaskToGraphQlTask(task), nil
 }
 
@@ -70,6 +73,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	for _, user := range usersDomain {
 		users = append(users, mapper.UserToGraphQLUser(user))
 	}
+	logger.Info("all users", zap.Int("count", len(usersDomain)))
 	return users, nil
 }
 
@@ -88,7 +92,7 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 		logger.Error("failed to get user by id", zap.String("user_id", id), zap.Error(err))
 		return nil, fmt.Errorf("error getting user: %w", err)
 	}
-
+	logger.Info("GetUserByID", zap.String("user_id", id), zap.Any("user", user))
 	return mapper.UserToGraphQLUser(user), nil
 }
 
@@ -111,6 +115,7 @@ func (r *queryResolver) TasksByUser(ctx context.Context, userID string) ([]*mode
 	for _, task := range tasksDomain {
 		tasks = append(tasks, mapper.TaskToGraphQlTask(task))
 	}
+	logger.Info("tasksByUser", zap.Int("count", len(tasksDomain)))
 	return tasks, nil
 }
 
