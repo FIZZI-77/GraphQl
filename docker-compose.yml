@@ -46,6 +46,15 @@ services:
     logging:
       driver: "json-file"
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: [ "redis-server", "--appendonly", "yes" ]
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -118,3 +127,4 @@ volumes:
   es_data:
   grafana_data:
   prometheus_data:
+  redis_data:

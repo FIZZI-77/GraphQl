@@ -1,9 +1,11 @@
 package pgxhelper
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 )
 
 type Config struct {
@@ -28,4 +30,17 @@ func NewPostgresDB(cfg Config) (*sql.DB, error) {
 		return nil, err
 	}
 	return db, nil
+}
+
+func NewRedisDB(ctx context.Context) (*redis.Client, error) {
+	red := redis.NewClient(&redis.Options{
+		Addr:     "redis:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	if err := red.Ping(ctx).Err(); err != nil {
+		return nil, err
+	}
+	return red, nil
 }

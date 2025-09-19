@@ -24,9 +24,9 @@ type Service struct {
 	Task
 }
 
-func NewService(repos *repository.Repository) *Service {
+func NewService(userRepo repository.CachedRepo, taskRepo repository.CachedRepo) *Service {
 	return &Service{
-		User: NewUserService(repos),
-		Task: NewTaskService(repos),
+		User: NewUserService(userRepo),
+		Task: NewTaskService(taskRepo),
 	}
 }

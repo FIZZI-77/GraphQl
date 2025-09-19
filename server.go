@@ -9,12 +9,14 @@ import (
 	"GraphQL/src/core/repository"
 	"GraphQL/src/core/service"
 	pgxhelper "GraphQL/src/pkg"
+	"context"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/joho/godotenv"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -45,8 +47,14 @@ func main() {
 		log.Fatalf("Error connecting to database: %v", err)
 	}
 
+	red, err := pgxhelper.NewRedisDB(context.Background())
+	if err != nil {
+		log.Fatalf("Error connecting to redis: %v", err)
+	}
+
 	repos := repository.NewRepository(db)
-	services := service.NewService(repos)
+	cacheRepo := repository.NewCachedRepo(repos, red, time.Minute)
+	services := service.NewService(*cacheRepo, *cacheRepo)
 
 	if err := logger.Init(); err != nil {
 		log.Fatalf("failed to init logger: %v", err)

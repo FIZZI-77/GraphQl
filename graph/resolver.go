@@ -1,6 +1,9 @@
 package graph
 
-import "GraphQL/src/core/service"
+import (
+	"GraphQL/src/core/service"
+	"github.com/redis/go-redis/v9"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -8,4 +11,5 @@ import "GraphQL/src/core/service"
 
 type Resolver struct {
 	Service *service.Service
+	Redis   *redis.Client
 }
