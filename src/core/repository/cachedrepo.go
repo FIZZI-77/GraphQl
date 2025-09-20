@@ -57,7 +57,7 @@ func (c *CachedRepo) GetTasksByUser(ctx context.Context, userID uuid.UUID) ([]*m
 
 	val, err := c.redis.Get(ctx, key).Result()
 
-	if err != nil {
+	if err == nil {
 		var tasks []*modelsService.Tasks
 		if unMarshalErr := json.Unmarshal([]byte(val), &tasks); unMarshalErr == nil {
 			return tasks, nil
@@ -78,7 +78,7 @@ func (c *CachedRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (*models
 	key := "user:" + userID.String()
 
 	val, err := c.redis.Get(ctx, key).Result()
-	if err != nil {
+	if err == nil {
 		var users modelsService.Users
 		if unMarshalErr := json.Unmarshal([]byte(val), &users); unMarshalErr == nil {
 			return &users, nil
@@ -98,9 +98,10 @@ func (c *CachedRepo) GetAllUsers(ctx context.Context) ([]*modelsService.Users, e
 	key := "all_users"
 
 	val, err := c.redis.Get(ctx, key).Result()
-	if err != nil {
+	if err == nil {
 		var users []*modelsService.Users
 		if unMarshalErr := json.Unmarshal([]byte(val), &users); unMarshalErr == nil {
+			fmt.Println("достали из кеша")
 			return users, nil
 		}
 	}
